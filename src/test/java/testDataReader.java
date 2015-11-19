@@ -48,5 +48,4 @@ public class TestDataReader {
 
         assertThat(testDataList.size(), is(4));
     }
-
 }
