@@ -1,3 +1,4 @@
+import com.google.common.collect.Lists;
 import model.DataItem;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,9 +20,16 @@ public class TestDataProcessor {
     List<DataItem> testList;
 
     @Before
-    public void setUp(){
-        sut = mock(DataProcessor.class);
-
+    public void setUp() throws ProcessFailException {
+        sut = new DataProcessorForTest();
+        testList = Lists.newArrayList(
+                mockData(0),
+                mockData(1),
+                mockData(2),
+                mockData(3),
+                mockData(4),
+                mockData(5)
+        );
     }
 
     @Test
@@ -36,7 +44,7 @@ public class TestDataProcessor {
 
     @Test(expected = ProcessFailException.class)
     public void 잘못된_데이터_처리시_오류확인() throws ProcessFailException {
-        DataItem mock = mockData(0);
+        DataItem mock = mock(DataItem.class);
         when(mock.getData()).thenReturn(null);
 
         sut.startProcess(mock);
@@ -50,4 +58,13 @@ public class TestDataProcessor {
 
         return mockItem;
     }
+    private class DataProcessorForTest extends DataProcessor<DataItem>{
+
+        @Override
+        protected DataItem processItem(DataItem item) throws ProcessFailException {
+            item.setData(99999);
+            return item;
+        }
+    }
 }
+
