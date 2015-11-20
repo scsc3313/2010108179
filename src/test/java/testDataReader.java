@@ -1,7 +1,9 @@
 import model.DataItem;
 import org.junit.Before;
 import org.junit.Test;
+import reader.DataItemConverter;
 import reader.DataReader;
+import reader.StreamReader;
 
 import java.io.*;
 import java.util.List;
@@ -9,7 +11,6 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -21,16 +22,15 @@ public class TestDataReader {
 
     @Before
     public void setUp() throws IOException {
-        InputStream mockStream = new ByteArrayInputStream(new byte[]{0, 0, 0, -1});
-        sut = new DataReader<DataItem>(mockStream) {
-            @Override
-            protected DataItem readFromStream() throws IOException {
-                if (inputStream.read() == -1) {
-                    return null;
-                }
-                return mock(DataItem.class);
-            }
-        };
+        StreamReader reader = mock(StreamReader.class);
+        DataItemConverter<DataItem> converter = mock(DataItemConverter.class);
+
+        when(reader.readNextByteElement()).thenReturn(new byte[]{}, new byte[]{}, new byte[]{}, new byte[]{}, null);
+
+        when(converter.itemFromByteArray(new byte[]{})).thenReturn(mock(DataItem.class));
+        when(converter.itemFromByteArray(null)).thenReturn(null);
+
+        sut = new DataReader<DataItem>(reader, converter);
     }
 
     @Test
