@@ -10,8 +10,13 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import processor.DataProcessor;
+import processor.ProcessFailException;
 import reader.DataReader;
 
+import java.util.Date;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
@@ -52,14 +57,14 @@ public class TestBatchController {
         sut.addProcessLogger(wrongLogger);
     }
     @Test(expected = NoProcessorExistException.class)
-    public void 프로세서가_없을때_리더_추가_작동(){
+    public void 프로세서가_없을때_리더_추가_작동() throws NoProcessorExistException {
         DataReader mockReader = mock(DataReader.class);
 
         sut.setDataReader(mockReader);
         sut.startProcess();
     }
     @Test
-    public void 리더_설정후_작동_확인(){
+    public void 리더_설정후_작동_확인() throws NoProcessorExistException, ProcessFailException {
         //Given
         sut.setDataReader(mockReader);
         sut.addProcessor(mockProcessor);
@@ -74,6 +79,65 @@ public class TestBatchController {
         assertThat(result, notNullValue());
         verify(mockProcessor, times(result.getDataProcessed())).processItem(any(DataItem.class));
         verify(mockLogger, times(result.getDataProcessed())).writeLog(any(ProcessResult.class));
+        verify(mockLogger, times(1)).writeResult(any(BatchResult.class));
+    }
+    @Test
+    public void 실제로_여러_프로세서가_처리하는지_확인() throws NoProcessorExistException {
+        sut.setDataReader(mockReader);
+        sut.addProcessLogger(mockLogger);
+        sut.addProcessor(new DataProcessor<Integer>() {
+            public ProcessResult<Integer> processItem(DataItem<Integer> item) {
+                Date startTime = new Date();
+                Date endTime;
+
+                DataItem<Integer> processItem = new DataItem<Integer>(10, item.getSeqeunce());
+
+                endTime = new Date();
+
+                ProcessResult<Integer> result = new ProcessResult<Integer>(
+                        processItem,
+                        startTime,
+                        endTime,
+                        true,
+                        "Processor1"
+                );
+
+                return result;
+            }
+        });
+        sut.addProcessor(new DataProcessor<Integer>() {
+
+            public ProcessResult<Integer> processItem(DataItem<Integer> item) {
+                Date startTime = new Date();
+                Date endTime;
+                Integer data = item.getData();
+                data *= 10;
+
+                DataItem<Integer> processItem = new DataItem<Integer>(data, item.getSeqeunce());
+
+                endTime = new Date();
+
+                ProcessResult<Integer> result = new ProcessResult<Integer>(
+                        processItem,
+                        startTime,
+                        endTime,
+                        true,
+                        "Processor2"
+                );
+
+                return result;
+            }
+        });
+
+        sut.startProcess();
+        BatchResult result = sut.getResult();
+        List<DataItem<Integer>> itemList = sut.getItemList();
+
+        assertThat(result.isSuccess(), is(true));
+        for (DataItem<Integer> item : itemList){
+            assertThat(item.getData(), is(100));
+        }
+
     }
     private DataReader getMockReader(){
         DataReader mock = mock(DataReader.class);
@@ -97,30 +161,31 @@ public class TestBatchController {
     private DataProcessor getMockProcessor(){
         DataProcessor mockProcessor = mock(DataProcessor.class);
 
-        when(mockProcessor.processItem(Mockito.any(DataItem.class))).thenReturn(
-                new ProcessResult(),
-                new ProcessResult(),
-                new ProcessResult(),
-                new ProcessResult(),
-                new ProcessResult(),
-                new ProcessResult(),
-                new ProcessResult()
-        );
+        try {
+            when(mockProcessor.processItem(Mockito.any(DataItem.class))).thenReturn(
+                    new ProcessResult(mock(DataItem.class), new Date(), new Date(),true, "mockProcessor"),
+                    new ProcessResult(mock(DataItem.class), new Date(), new Date(),true, "mockProcessor"),
+                    new ProcessResult(mock(DataItem.class), new Date(), new Date(),true, "mockProcessor"),
+                    new ProcessResult(mock(DataItem.class), new Date(), new Date(),true, "mockProcessor"),
+                    new ProcessResult(mock(DataItem.class), new Date(), new Date(),true, "mockProcessor"),
+                    new ProcessResult(mock(DataItem.class), new Date(), new Date(),true, "mockProcessor"),
+                    new ProcessResult(mock(DataItem.class), new Date(), new Date(),true, "mockProcessor")
+            );
+        } catch (ProcessFailException ignore) {}
 
         return mockProcessor;
     }
     private ProcessLogger getMockLogger(){
         ProcessLogger mockLogger = mock(ProcessLogger.class);
 
-        ProcessResult anyResult = Mockito.any(ProcessResult.class);
-
         doAnswer(new Answer() {
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Object[] arguments = invocationOnMock.getArguments();
-                System.out.println(arguments);
+                ProcessResult result = (ProcessResult) invocationOnMock.getArguments()[0];
+                System.out.println("data:"+result.getData() + "sequence:"+result.getProcessorName());
+
                 return null;
             }
-        }).when(mockLogger).writeLog(anyResult);
+        }).when(mockLogger).writeLog(Mockito.any(ProcessResult.class));
 
         return mockLogger;
     }

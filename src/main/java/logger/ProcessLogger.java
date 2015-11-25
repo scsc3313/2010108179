@@ -1,5 +1,6 @@
 package logger;
 
+import model.BatchResult;
 import model.ProcessResult;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -8,6 +9,9 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public class ProcessLogger<T> {
     public void writeLog(ProcessResult result) {
+        throw new NotImplementedException();
+    }
+    public void writeResult(BatchResult result){
         throw new NotImplementedException();
     }
 }
