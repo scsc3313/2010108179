@@ -12,7 +12,9 @@ import org.mockito.stubbing.Answer;
 import processor.DataProcessor;
 import processor.ProcessFailException;
 import reader.DataReader;
+import writter.DataWriter;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -30,6 +32,7 @@ public class TestBatchController {
     private DataReader mockReader;
     private DataProcessor mockProcessor;
     private ProcessLogger mockLogger;
+    private DataWriter mockWriter;
 
     @Before
     public void setUp(){
@@ -37,6 +40,12 @@ public class TestBatchController {
         mockReader = getMockReader();
         mockProcessor = getMockProcessor();
         mockLogger = getMockLogger();
+        mockWriter = getMockWriter();
+
+        sut.setDataReader(mockReader);
+        sut.addProcessLogger(mockLogger);
+        sut.addProcessor(mockProcessor);
+        sut.setDataWriter(mockWriter);
     }
     @Test(expected = IllegalArgumentException.class)
     public void 잘못된_리더_설정(){
@@ -57,47 +66,43 @@ public class TestBatchController {
         sut.addProcessLogger(wrongLogger);
     }
     @Test(expected = NoProcessorExistException.class)
-    public void 프로세서가_없을때_리더_추가_작동() throws NoProcessorExistException {
-        DataReader mockReader = mock(DataReader.class);
+    public void 프로세서가_없을때_리더_추가_작동() throws NoProcessorExistException, IOException {
+        sut = new BatchController();
 
+        DataReader mockReader = mock(DataReader.class);
         sut.setDataReader(mockReader);
+
         sut.startProcess();
     }
     @Test
-    public void 리더_설정후_작동_확인() throws NoProcessorExistException, ProcessFailException {
-        //Given
-        sut.setDataReader(mockReader);
-        sut.addProcessor(mockProcessor);
-        sut.addProcessLogger(mockLogger);
-
-        //When
+    public void 리더_설정후_작동_확인() throws NoProcessorExistException, ProcessFailException, IOException {
         sut.setDataReader(mock(DataReader.class));
         sut.startProcess();
 
-        //Then
         BatchResult result = sut.getResult();
         assertThat(result, notNullValue());
         verify(mockProcessor, times(result.getDataProcessed())).processItem(any(DataItem.class));
         verify(mockLogger, times(result.getDataProcessed())).writeLog(any(ProcessResult.class));
         verify(mockLogger, times(1)).writeResult(any(BatchResult.class));
+        verify(mockWriter, times(result.getDataProcessed())).writeData(any());
     }
     @Test
-    public void 실제로_여러_프로세서가_처리하는지_확인() throws NoProcessorExistException, ProcessFailException {
-        sut.setDataReader(mockReader);
-        sut.addProcessLogger(mockLogger);
-
-        DataProcessor mockProcessor1 = getMockProcessor();
+    public void 실제로_여러_프로세서가_처리하는지_확인() throws NoProcessorExistException, ProcessFailException, IOException {
+        //Given
         DataProcessor mockProcessor2 = getMockProcessor();
-
-        sut.addProcessor(mockProcessor1);
         sut.addProcessor(mockProcessor2);
 
+        //When
         sut.startProcess();
         BatchResult result = sut.getResult();
+        List<DataItem> itemList = sut.getItemList();
 
+        //Then
         assertThat(result.isSuccess(), is(true));
-        verify(mockProcessor1, times(result.getDataProcessed())).processItem(any(DataItem.class));
+        assertThat(itemList.size(), is(result.getDataProcessed()));
+        verify(mockProcessor, times(result.getDataProcessed())).processItem(any(DataItem.class));
         verify(mockProcessor2, times(result.getDataProcessed())).processItem(any(DataItem.class));
+        verify(mockWriter, times(result.getDataProcessed())).writeData(any());
     }
     private DataReader getMockReader(){
         DataReader mock = mock(DataReader.class);
@@ -141,12 +146,42 @@ public class TestBatchController {
         doAnswer(new Answer() {
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 ProcessResult result = (ProcessResult) invocationOnMock.getArguments()[0];
-                System.out.println("data:"+result.getData() + "sequence:"+result.getProcessorName());
+
+                StringBuilder builder = new StringBuilder();
+                builder.append("log = ")
+                        .append("data:")
+                        .append(result.getData())
+                        .append("sequence:")
+                        .append(result.getProcessorName());
+
+
+                System.out.println(builder.toString());
 
                 return null;
             }
         }).when(mockLogger).writeLog(Mockito.any(ProcessResult.class));
 
         return mockLogger;
+    }
+    private DataWriter getMockWriter(){
+        DataWriter mockWriter = mock(DataWriter.class);
+
+        try {
+            doAnswer(new Answer() {
+                public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                    Object o = invocationOnMock.getArguments()[0];
+
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("log = ")
+                            .append("data:")
+                            .append(mock(Object.class));
+
+                    return null;
+                }
+            }).when(mockWriter).writeData(Mockito.anyObject());
+        } catch (IOException e) {
+            return null;
+        }
+        return mockWriter;
     }
 }

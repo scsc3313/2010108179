@@ -7,8 +7,9 @@ import model.ProcessResult;
 import processor.DataProcessor;
 import processor.ProcessFailException;
 import reader.DataReader;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import writter.DataWriter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,6 +23,7 @@ public class BatchController<T> {
     private List<ProcessLogger<T>> loggerList;
     private DataReader<T> dataReader = null;
     private List<DataItem<T>> processedList;
+    private DataWriter<T> dataWriter;
 
     public BatchController() {
         processorList = new ArrayList<DataProcessor<T>>();
@@ -49,11 +51,15 @@ public class BatchController<T> {
         dataReader = reader;
     }
 
+    public void setDataWriter(DataWriter<T> dataWriter) {
+        this.dataWriter = dataWriter;
+    }
+
     public BatchResult getResult() {
         return result;
     }
 
-    public void startProcess() throws NoProcessorExistException {
+    public void startProcess() throws NoProcessorExistException, IOException {
         if (processorList.size() == 0)
             throw new NoProcessorExistException();
 
@@ -65,17 +71,9 @@ public class BatchController<T> {
 
         while (dataReader.hasNext()){
             try{
-
                 DataItem<T> item = dataReader.readNext();
-                for (DataProcessor<T> processor : processorList){
-                    ProcessResult processResult = processor.processItem(item);
-                    item = processResult.getData();
-
-                    writeLog(processResult);
-                }
-
+                processItem(item);
                 processCount++;
-                processedList.add(item);
             }
             catch (ProcessFailException e){
                 success = false;
@@ -92,10 +90,28 @@ public class BatchController<T> {
                 success
         );
 
-        writeResult(result);
+        writeResultLog(result);
+        writeResult();
     }
 
-    private void writeResult(BatchResult result) {
+    private void processItem(DataItem<T> item) throws ProcessFailException {
+        for (DataProcessor<T> processor : processorList){
+            ProcessResult<T> processResult = processor.processItem(item);
+            item = processResult.getData();
+
+            writeLog(processResult);
+        }
+
+        processedList.add(item);
+    }
+
+    private void writeResult() throws IOException {
+        for (DataItem<T> item : processedList){
+            dataWriter.writeData(item.getData());
+        }
+    }
+
+    private void writeResultLog(BatchResult result) {
         for (ProcessLogger<T> logger : loggerList){
             logger.writeResult(result);
         }
