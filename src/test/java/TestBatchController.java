@@ -172,9 +172,11 @@ public class TestBatchController {
                     Object o = invocationOnMock.getArguments()[0];
 
                     StringBuilder builder = new StringBuilder();
-                    builder.append("log = ")
+                    builder.append("write = ")
                             .append("data:")
                             .append(mock(Object.class));
+
+                    System.out.println(builder.toString());
 
                     return null;
                 }
