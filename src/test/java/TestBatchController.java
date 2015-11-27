@@ -82,62 +82,22 @@ public class TestBatchController {
         verify(mockLogger, times(1)).writeResult(any(BatchResult.class));
     }
     @Test
-    public void 실제로_여러_프로세서가_처리하는지_확인() throws NoProcessorExistException {
+    public void 실제로_여러_프로세서가_처리하는지_확인() throws NoProcessorExistException, ProcessFailException {
         sut.setDataReader(mockReader);
         sut.addProcessLogger(mockLogger);
-        sut.addProcessor(new DataProcessor<Integer>() {
-            public ProcessResult<Integer> processItem(DataItem<Integer> item) {
-                Date startTime = new Date();
-                Date endTime;
 
-                DataItem<Integer> processItem = new DataItem<Integer>(10, item.getSeqeunce());
+        DataProcessor mockProcessor1 = getMockProcessor();
+        DataProcessor mockProcessor2 = getMockProcessor();
 
-                endTime = new Date();
-
-                ProcessResult<Integer> result = new ProcessResult<Integer>(
-                        processItem,
-                        startTime,
-                        endTime,
-                        true,
-                        "Processor1"
-                );
-
-                return result;
-            }
-        });
-        sut.addProcessor(new DataProcessor<Integer>() {
-
-            public ProcessResult<Integer> processItem(DataItem<Integer> item) {
-                Date startTime = new Date();
-                Date endTime;
-                Integer data = item.getData();
-                data *= 10;
-
-                DataItem<Integer> processItem = new DataItem<Integer>(data, item.getSeqeunce());
-
-                endTime = new Date();
-
-                ProcessResult<Integer> result = new ProcessResult<Integer>(
-                        processItem,
-                        startTime,
-                        endTime,
-                        true,
-                        "Processor2"
-                );
-
-                return result;
-            }
-        });
+        sut.addProcessor(mockProcessor1);
+        sut.addProcessor(mockProcessor2);
 
         sut.startProcess();
         BatchResult result = sut.getResult();
-        List<DataItem<Integer>> itemList = sut.getItemList();
 
         assertThat(result.isSuccess(), is(true));
-        for (DataItem<Integer> item : itemList){
-            assertThat(item.getData(), is(100));
-        }
-
+        verify(mockProcessor1, times(result.getDataProcessed())).processItem(any(DataItem.class));
+        verify(mockProcessor2, times(result.getDataProcessed())).processItem(any(DataItem.class));
     }
     private DataReader getMockReader(){
         DataReader mock = mock(DataReader.class);
