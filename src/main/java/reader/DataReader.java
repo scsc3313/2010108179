@@ -9,4 +9,8 @@ public interface DataReader<T> {
     DataItem<T> readNext();
 
     boolean hasNext();
+
+    void rewindOnce();
+
+    void rewind();
 }

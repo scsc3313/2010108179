@@ -4,6 +4,7 @@ import logger.ProcessLogger;
 import model.BatchResult;
 import model.DataItem;
 import model.ProcessResult;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -103,6 +104,28 @@ public class TestBatchController {
         verify(mockProcessor, times(result.getDataProcessed())).processItem(any(DataItem.class));
         verify(mockProcessor2, times(result.getDataProcessed())).processItem(any(DataItem.class));
         verify(mockWriter, times(result.getDataProcessed())).writeData(any());
+    }
+    @Test
+    public void 처리_실패시_배치_처리가_중지되는지_확인() throws IOException, NoProcessorExistException, ProcessFailException {
+        doAnswer(new Answer() {
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                DataItem item = (DataItem) invocationOnMock.getArguments()[0];
+                System.out.println("처리중"+item);
+                Integer data = (Integer) item.getData();
+                if (data == 5 && item.getSeqeunce() ==4)
+                    throw new ProcessFailException();
+
+                return new ProcessResult(mock(DataItem.class), new Date(), new Date(),true, "mockProcessor");
+            }
+        }).when(mockProcessor).processItem(Mockito.any(DataItem.class));
+
+        sut.startProcess();
+
+        BatchResult result = sut.getResult();
+        List itemList = sut.getItemList();
+
+        System.out.println(itemList);
+        assertThat(result.isSuccess(), is(false));
     }
     private DataReader getMockReader(){
         DataReader mock = mock(DataReader.class);

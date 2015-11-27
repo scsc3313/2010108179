@@ -13,21 +13,27 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.*;
 
 /**
  * Created by ghost9087 on 2015. 11. 23..
  */
-public class BatchController<T> {
+public class BatchController<T> implements Runnable{
     private BatchResult result;
     private List<DataProcessor<T>> processorList;
     private List<ProcessLogger<T>> loggerList;
     private DataReader<T> dataReader = null;
     private List<DataItem<T>> processedList;
     private DataWriter<T> dataWriter;
+    private Thread readThread;
+    final private BlockingQueue<DataItem<T>> itemQueue;
 
     public BatchController() {
         processorList = new ArrayList<DataProcessor<T>>();
         loggerList = new ArrayList<ProcessLogger<T>>();
+        readThread = new Thread(this);
+        itemQueue = new LinkedBlockingQueue<DataItem<T>>();
     }
 
     public void addProcessor(DataProcessor<T> processor) {
@@ -69,9 +75,11 @@ public class BatchController<T> {
         boolean success = true;
         processedList = new ArrayList<DataItem<T>>();
 
-        while (dataReader.hasNext()){
+        readThread.start();
+
+        while (!itemQueue.isEmpty()){
             try{
-                DataItem<T> item = dataReader.readNext();
+                DataItem<T> item = itemQueue.poll();
                 processItem(item);
                 processCount++;
             }
@@ -124,6 +132,24 @@ public class BatchController<T> {
     private void writeLog(ProcessResult processResult) {
         for (ProcessLogger<T> logger : loggerList){
             logger.writeLog(processResult);
+        }
+    }
+
+    public void run() {
+        DataItem<T> failToPut = null;
+        while (dataReader.hasNext()){
+            DataItem<T> item;
+            if (failToPut != null)  item = failToPut;
+            else                    item = dataReader.readNext();
+
+            try {
+                itemQueue.put(item);
+                Thread.sleep(10);
+            }
+            // FIXME : Exception을 무시하지 말고 처리할 것
+            catch (InterruptedException e) {
+                failToPut = item;
+            }
         }
     }
 }
