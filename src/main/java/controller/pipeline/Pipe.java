@@ -7,6 +7,7 @@ import processor.ProcessFailException;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by ghost9087 on 2015. 11. 28..
@@ -33,23 +34,19 @@ public class Pipe<T> implements Runnable{
 
     public void run() {
         while (work){
-            while (pipeQueue.size() ==0)
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    if (pipeQueue.size() == 0)
-                        throw new IllegalStateException("Thread wakes without item on queue");
+            DataItem<T> item;
+            try {
+                while ((item=pipeQueue.poll(500, TimeUnit.MICROSECONDS)) != null){
+                    ProcessResult<T> result;
+                    try {
+                        result = processor.processItem(item);
+                    } catch (ProcessFailException e) {
+                        result = e.getFailResult();
+                    }
+                    listener.onProcess(result);
                 }
-
-            while (pipeQueue.size() > 0){
-                DataItem<T> dataItem = pipeQueue.poll();
-                ProcessResult<T> result;
-                try {
-                    result = processor.processItem(dataItem);
-                } catch (ProcessFailException e) {
-                    result = (ProcessResult<T>) e.getFailResult();
-                }
-                listener.onProcess(result);
+            }catch (InterruptedException e){
+                continue;
             }
         }
     }
