@@ -44,18 +44,13 @@ public class ThreadPipe<T> implements Runnable, Pipe<T> {
                     }
                     listener.onProcess(result);
                 }
-            }catch (InterruptedException e){
-                continue;
-            }
+            }catch (InterruptedException ignore){}
         }
     }
 
 
     public void addItem(DataItem<T> dataItem) {
         pipeQueue.add(dataItem);
-        if (pipeQueue.size() > 0){
-            thread.interrupt();
-        }
     }
 
     public void setListener(PipelineProcessListener<T> listener) {

@@ -1,10 +1,9 @@
-import controller.BatchController;
-import controller.NoProcessorExistException;
+package controller;
+
 import logger.ProcessLogger;
 import model.BatchResult;
 import model.DataItem;
 import model.ProcessResult;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -24,20 +23,22 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
 /**
- * Created by ghost9087 on 2015. 11. 23..
+ * Created by ghost9087 on 2015. 11. 28..
  */
-public class TestBatchController {
-    private BatchController sut;
-    private DataReader mockReader;
-    private DataProcessor mockProcessor;
-    private ProcessLogger mockLogger;
-    private DataWriter mockWriter;
+public abstract class TestBatchController {
+    protected BatchController sut;
+    protected DataReader mockReader;
+    protected DataProcessor mockProcessor;
+    protected ProcessLogger mockLogger;
+    protected DataWriter mockWriter;
 
     @Before
     public void setUp(){
-        sut = new BatchController();
+        sut = getBatchController();
         mockReader = getMockReader();
         mockProcessor = getMockProcessor();
         mockLogger = getMockLogger();
@@ -68,7 +69,7 @@ public class TestBatchController {
     }
     @Test(expected = NoProcessorExistException.class)
     public void 프로세서가_없을때_리더_추가_작동() throws NoProcessorExistException, IOException {
-        sut = new BatchController();
+        sut = new DefaultBatchController();
 
         DataReader mockReader = mock(DataReader.class);
         sut.setDataReader(mockReader);
@@ -112,8 +113,10 @@ public class TestBatchController {
                 DataItem item = (DataItem) invocationOnMock.getArguments()[0];
                 System.out.println("처리중"+item);
                 Integer data = (Integer) item.getData();
-                if (data == 5 && item.getSeqeunce() ==4)
-                    throw new ProcessFailException();
+                if (data == 5 && item.getSeqeunce() ==4){
+                    ProcessResult result = mock(ProcessResult.class);
+                    throw new ProcessFailException(result);
+                }
 
                 return new ProcessResult(mock(DataItem.class), new Date(), new Date(),true, "mockProcessor");
             }
@@ -127,7 +130,7 @@ public class TestBatchController {
         System.out.println(itemList);
         assertThat(result.isSuccess(), is(false));
     }
-    private DataReader getMockReader(){
+    protected DataReader getMockReader(){
         DataReader mock = mock(DataReader.class);
 
         when(mock.hasNext()).thenReturn(
@@ -146,7 +149,7 @@ public class TestBatchController {
 
         return mock;
     }
-    private DataProcessor getMockProcessor(){
+    protected DataProcessor getMockProcessor(){
         DataProcessor mockProcessor = mock(DataProcessor.class);
 
         try {
@@ -163,7 +166,7 @@ public class TestBatchController {
 
         return mockProcessor;
     }
-    private ProcessLogger getMockLogger(){
+    protected ProcessLogger getMockLogger(){
         ProcessLogger mockLogger = mock(ProcessLogger.class);
 
         doAnswer(new Answer() {
@@ -186,7 +189,7 @@ public class TestBatchController {
 
         return mockLogger;
     }
-    private DataWriter getMockWriter(){
+    protected DataWriter getMockWriter(){
         DataWriter mockWriter = mock(DataWriter.class);
 
         try {
@@ -209,4 +212,5 @@ public class TestBatchController {
         }
         return mockWriter;
     }
+    abstract protected BatchController getBatchController();
 }

@@ -33,6 +33,7 @@ public class PipeManager<T> implements OnPipelineFinish<T> {
     public void addItem(DataItem<T> item) {
         if (item == null)
             throw new IllegalArgumentException("data item for processor must not be null");
+
         head.addItem(item);
     }
 

@@ -21,7 +21,7 @@ public class PipeWrapper<T> implements PipelineProcessListener<T> {
 
     public void onProcess(ProcessResult<T> result) {
         DataItem<T> data = result.getData();
-        if (nextWrapper != null)
+        if (nextWrapper != null && result.isSuccess())
             nextWrapper.addItem(data);
         else
             onFinish.onFinish(result);
