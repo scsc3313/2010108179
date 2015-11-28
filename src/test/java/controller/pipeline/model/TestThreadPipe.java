@@ -1,11 +1,10 @@
-package controller.pipeline;
+package controller.pipeline.model;
 
 import model.DataItem;
 import model.ProcessResult;
 import net.jodah.concurrentunit.Waiter;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -19,8 +18,8 @@ import static org.mockito.Mockito.*;
 /**
  * Created by ghost9087 on 2015. 11. 28..
  */
-public class TestPipe {
-    private Pipe sut;
+public class TestThreadPipe {
+    private ThreadPipe sut;
     private PipelineProcessListener mockListener;
     private Waiter waiter;
 
@@ -39,7 +38,8 @@ public class TestPipe {
             }
         }).when(mockListener).onProcess(Mockito.any(ProcessResult.class));
 
-        sut = new Pipe(mockProcessor, mockListener);
+        sut = new ThreadPipe(mockProcessor);
+        sut.setListener(mockListener);
     }
 
     @Test
@@ -76,6 +76,4 @@ public class TestPipe {
         waiter.await(3000, 2);
         verify(mockListener, times(2)).onProcess(Mockito.any(ProcessResult.class));
     }
-
-
 }

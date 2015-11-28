@@ -1,4 +1,4 @@
-package controller.pipeline;
+package controller.pipeline.model;
 
 import model.DataItem;
 import model.ProcessResult;
@@ -12,16 +12,15 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by ghost9087 on 2015. 11. 28..
  */
-public class Pipe<T> implements Runnable{
+public class ThreadPipe<T> implements Runnable, Pipe<T> {
     final private DataProcessor<T> processor;
     final private BlockingQueue<DataItem<T>> pipeQueue;
     final private Thread thread;
-    final PipelineProcessListener<T> listener;
+    private PipelineProcessListener<T> listener;
     private boolean work;
 
-    public Pipe(DataProcessor<T> processor, PipelineProcessListener<T> listener) {
+    public ThreadPipe(DataProcessor<T> processor) {
         work = true;
-        this.listener = listener;
         pipeQueue = new LinkedBlockingQueue<DataItem<T>>();
         this.processor = processor;
         thread = new Thread(this);
@@ -57,5 +56,9 @@ public class Pipe<T> implements Runnable{
         if (pipeQueue.size() > 0){
             thread.interrupt();
         }
+    }
+
+    public void setListener(PipelineProcessListener<T> listener) {
+        this.listener = listener;
     }
 }
