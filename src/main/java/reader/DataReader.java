@@ -10,7 +10,7 @@ import java.io.IOException;
 public interface DataReader<T> {
     DataItem<T> readNext() throws IOException;
 
-    boolean hasNext();
+    boolean hasNext() throws IOException;
 
     void rewindOnce() throws IOException;
 

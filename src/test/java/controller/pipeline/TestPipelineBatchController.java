@@ -35,7 +35,7 @@ public class TestPipelineBatchController extends TestBatchController {
 
     @Override
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         sut = getBatchController();
         mockReader = getMockReader();
         mockProcessor = getMockProcessor();

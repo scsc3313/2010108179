@@ -37,7 +37,7 @@ public abstract class TestBatchController {
     protected DataWriter mockWriter;
 
     @Before
-    public void setUp(){
+    public void setUp() throws IOException {
         sut = getBatchController();
         mockReader = getMockReader();
         mockProcessor = getMockProcessor();
@@ -130,7 +130,7 @@ public abstract class TestBatchController {
         System.out.println(itemList);
         assertThat(result.isSuccess(), is(false));
     }
-    protected DataReader getMockReader(){
+    protected DataReader getMockReader() throws IOException {
         DataReader mock = mock(DataReader.class);
 
         when(mock.hasNext()).thenReturn(
