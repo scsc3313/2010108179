@@ -1,9 +1,9 @@
 package writer;
 
 import model.DataItem;
-import org.omg.CORBA.portable.OutputStream;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Created by ghost9087 on 2015. 12. 2..

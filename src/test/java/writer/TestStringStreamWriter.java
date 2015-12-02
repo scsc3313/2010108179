@@ -4,9 +4,9 @@ import model.DataItem;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.omg.CORBA.portable.OutputStream;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
