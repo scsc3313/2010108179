@@ -2,6 +2,7 @@ package logger;
 
 import model.DataItem;
 import model.ProcessResult;
+import util.DateUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,15 +23,10 @@ public class DefaultProcessResultFormatter<T> implements ProcessResultFormatter<
                 .append(", processor : ")
                 .append(result.getProcessorName())
                 .append(", end time : ")
-                .append(dateToString(result.getEndTime()))
+                .append(DateUtil.dateToString(result.getEndTime()))
                 .append(", result : ")
                 .append(result.isSuccess());
         return builder.toString();
     }
 
-    public String dateToString(Date date){
-        SimpleDateFormat formatter = new SimpleDateFormat("yy-MM-dd hh:mm:ss");
-
-        return formatter.format(date);
-    }
 }
