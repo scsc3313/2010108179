@@ -1,6 +1,5 @@
-import logger.BatchResultFormatter;
-import logger.ProcessLogger;
-import logger.ProcessResultFormatter;
+package logger;
+
 import model.BatchResult;
 import model.DataItem;
 import model.ProcessResult;
