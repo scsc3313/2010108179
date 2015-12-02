@@ -12,7 +12,7 @@ import org.mockito.stubbing.Answer;
 import processor.DataProcessor;
 import processor.ProcessFailException;
 import reader.DataReader;
-import writter.DataWriter;
+import writer.DataWriter;
 
 import java.io.IOException;
 import java.util.Date;

@@ -7,7 +7,7 @@ import model.ProcessResult;
 import processor.DataProcessor;
 import processor.ProcessFailException;
 import reader.DataReader;
-import writter.DataWriter;
+import writer.DataWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -91,7 +91,7 @@ public class DefaultBatchController<T> implements BatchController<T> {
         );
 
         writeResultLog(result);
-        writeLog();
+        writeResult();
     }
 
     private void processItem(DataItem<T> item) throws ProcessFailException {
@@ -99,15 +99,15 @@ public class DefaultBatchController<T> implements BatchController<T> {
             ProcessResult<T> processResult = processor.processItem(item);
             item = processResult.getData();
 
-            writeLog(processResult);
+            writeResult(processResult);
         }
 
         processedList.add(item);
     }
 
-    private void writeLog() throws IOException {
+    private void writeResult() throws IOException {
         for (DataItem<T> item : processedList){
-            dataWriter.writeData(item.getData());
+            dataWriter.writeData(item);
         }
     }
 
@@ -121,7 +121,7 @@ public class DefaultBatchController<T> implements BatchController<T> {
         return processedList;
     }
 
-    private void writeLog(ProcessResult processResult) {
+    private void writeResult(ProcessResult processResult) {
         for (ProcessLogger<T> logger : loggerList){
             logger.writeLog(processResult);
         }

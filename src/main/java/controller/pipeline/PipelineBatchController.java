@@ -11,7 +11,7 @@ import model.DataItem;
 import model.ProcessResult;
 import processor.DataProcessor;
 import reader.DataReader;
-import writter.DataWriter;
+import writer.DataWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -108,7 +108,7 @@ public class PipelineBatchController<T> implements BatchController<T>, OnPipelin
         if (success){
             for (DataItem<T> item : processedList){
                 try {
-                    dataWriter.writeData(item.getData());
+                    dataWriter.writeData(item);
                 } catch (IOException e) {
                     System.err.println(e.getMessage());
                     break;

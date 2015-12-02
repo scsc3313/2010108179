@@ -5,7 +5,7 @@ import model.BatchResult;
 import model.DataItem;
 import processor.DataProcessor;
 import reader.DataReader;
-import writter.DataWriter;
+import writer.DataWriter;
 
 import java.io.IOException;
 import java.util.List;
