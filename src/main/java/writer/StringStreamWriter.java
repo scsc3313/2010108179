@@ -24,6 +24,7 @@ public class StringStreamWriter implements DataWriter<String> {
             byte[] rawData = stringData.getBytes();
 
             outputStream.write(rawData);
+            outputStream.write("\n".getBytes());
         }
         else
             throw new IOException("Attempt to write invalid data");
