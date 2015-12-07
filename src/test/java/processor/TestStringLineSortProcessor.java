@@ -28,7 +28,7 @@ public class TestStringLineSortProcessor {
         ProcessResult<String> result = sut.processItem(mockItem);
 
         assertThat(result.getData(), notNullValue());
-        assertThat(result.getStartTime().getTime(), greaterThanOrEqualTo(result.getEndTime().getTime()));
+        assertThat(result.getEndTime().getTime(), greaterThanOrEqualTo(result.getStartTime().getTime()));
         assertThat(result.getProcessorName(), is(sut.getClass().getName()));
     }
 

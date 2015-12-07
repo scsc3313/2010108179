@@ -17,7 +17,7 @@ public class DefaultBatchResultFormatter implements BatchResultFormatter{
                 .append(", processed item : ")
                 .append(result.getDataProcessed())
                 .append(", elapsed time : ")
-                .append(DateUtil.elaspedTime(result.getStartTime(), result.getEndTime()))
+                .append(DateUtil.elapsedTime(result.getStartTime(), result.getEndTime()))
                 .append("ms")
                 .append(", result : ")
                 .append(result.isSuccess());

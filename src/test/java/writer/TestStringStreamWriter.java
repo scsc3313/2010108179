@@ -31,7 +31,8 @@ public class TestStringStreamWriter {
 
         sut.writeData(item);
 
-        verify(outputStream, times(1)).write(Mockito.any(byte[].class));
+        //실제 데이터와+'\n'을 출력하는지 검사
+        verify(outputStream, times(2)).write(Mockito.any(byte[].class));
     }
     @Test(expected = IOException.class)
     public void 잘못된_데이터를_출력_할때_예외_발생() throws IOException {

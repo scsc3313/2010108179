@@ -12,8 +12,8 @@ public class DateUtil {
 
         return formatter.format(date);
     }
-    public static long elaspedTime(Date before, Date after){
-        return before.getTime()-after.getTime();
+    public static long elapsedTime(Date before, Date after){
+        return after.getTime()-before.getTime();
     }
 
 }
