@@ -106,7 +106,6 @@ public class PipelineBatchController<T> implements BatchController<T>, OnPipelin
             writeProcessLog(result);
         }
         else{
-            pipeManager.stop();
             onBatchFinish(false);
         }
 
@@ -138,6 +137,7 @@ public class PipelineBatchController<T> implements BatchController<T>, OnPipelin
                 }
             }
         }
+        pipeManager.stop();
         mainThread.interrupt();
     }
 
