@@ -1,8 +1,8 @@
-package config;
+package term.project.config;
 
 import logger.BatchResultFormatter;
-import logger.DefaultBatchResultFormatter;
-import logger.DefaultProcessResultFormatter;
+import term.project.DefaultBatchResultFormatter;
+import term.project.DefaultProcessResultFormatter;
 import logger.ProcessResultFormatter;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;

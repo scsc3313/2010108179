@@ -1,4 +1,4 @@
-package config;
+package term.project.config;
 
 import controller.BatchController;
 import controller.pipeline.PipelineBatchController;

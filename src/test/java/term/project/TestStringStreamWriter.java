@@ -1,4 +1,4 @@
-package writer;
+package term.project;
 
 import model.DataItem;
 import org.junit.Before;
@@ -8,9 +8,7 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by ghost9087 on 2015. 12. 2..

@@ -1,4 +1,4 @@
-package logger;
+package term.project;
 
 import model.BatchResult;
 import org.junit.Test;

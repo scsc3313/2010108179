@@ -1,12 +1,9 @@
-package reader;
+package term.project;
 
 import model.DataItem;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import reader.DataReader;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

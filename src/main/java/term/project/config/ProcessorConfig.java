@@ -1,7 +1,7 @@
-package config;
+package term.project.config;
 
 import logger.BatchResultFormatter;
-import logger.ConsoleProcessLogger;
+import term.project.ConsoleProcessLogger;
 import logger.ProcessLogger;
 import logger.ProcessResultFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,11 +9,11 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import processor.DataProcessor;
-import processor.StringLineSortProcessor;
+import term.project.StringLineSortProcessor;
 import reader.DataReader;
-import reader.StringStreamDataReader;
+import term.project.StringStreamDataReader;
 import writer.DataWriter;
-import writer.StringStreamWriter;
+import term.project.StringStreamWriter;
 
 import java.io.InputStream;
 import java.io.OutputStream;

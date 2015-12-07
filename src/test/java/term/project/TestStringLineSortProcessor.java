@@ -1,4 +1,4 @@
-package processor;
+package term.project;
 
 import model.DataItem;
 import model.ProcessResult;

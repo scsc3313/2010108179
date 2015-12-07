@@ -1,6 +1,7 @@
-package reader;
+package term.project;
 
 import model.DataItem;
+import reader.DataReader;
 
 import java.io.*;
 

@@ -1,5 +1,6 @@
-package logger;
+package term.project;
 
+import logger.ProcessResultFormatter;
 import model.DataItem;
 import model.ProcessResult;
 import util.DateUtil;
@@ -10,7 +11,7 @@ import java.util.Date;
 /**
  * Created by ghost9087 on 2015. 12. 2..
  */
-public class DefaultProcessResultFormatter<T> implements ProcessResultFormatter<T>{
+public class DefaultProcessResultFormatter<T> implements ProcessResultFormatter<T> {
     @Override
     public String convert(ProcessResult<T> result) {
         DataItem<T> data = result.getData();

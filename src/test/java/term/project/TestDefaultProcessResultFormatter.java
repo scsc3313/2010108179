@@ -1,12 +1,11 @@
-package logger;
+package term.project;
 
 import model.DataItem;
 import model.ProcessResult;
 import org.junit.Before;
 import org.junit.Test;
+import term.project.DefaultProcessResultFormatter;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;

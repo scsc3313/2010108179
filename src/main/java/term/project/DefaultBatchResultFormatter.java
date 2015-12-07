@@ -1,12 +1,13 @@
-package logger;
+package term.project;
 
+import logger.BatchResultFormatter;
 import model.BatchResult;
 import util.DateUtil;
 
 /**
  * Created by ghost9087 on 2015. 12. 2..
  */
-public class DefaultBatchResultFormatter implements BatchResultFormatter{
+public class DefaultBatchResultFormatter implements BatchResultFormatter {
     @Override
     public String convert(BatchResult result) {
         StringBuilder builder = new StringBuilder();

@@ -1,6 +1,7 @@
-package writer;
+package term.project;
 
 import model.DataItem;
+import writer.DataWriter;
 
 import java.io.IOException;
 import java.io.OutputStream;
