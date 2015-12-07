@@ -18,10 +18,10 @@ public class PipeManager<T> implements OnPipelineFinish<T> {
 
     public void addPipe(Pipe<T> pipe) {
         if (head == null)
-            head = new PipeWrapper<T>(pipe, this);
+            head = new PipeWrapper<>(pipe, this);
         else {
             PipeWrapper<T> last = head.getLastWrapper();
-            last.setNextWrapper(new PipeWrapper<T>(pipe, this));
+            last.setNextWrapper(new PipeWrapper<>(pipe, this));
         }
         pipeCount++;
     }
@@ -39,5 +39,13 @@ public class PipeManager<T> implements OnPipelineFinish<T> {
 
     public void onFinish(ProcessResult<T> result) {
         finishListener.onFinish(result);
+    }
+
+    public void stop() {
+        PipeWrapper<T> pipe = head;
+        pipe.stop();
+        while ((pipe = pipe.getNextWrapper()) != null){
+            pipe.stop();
+        }
     }
 }

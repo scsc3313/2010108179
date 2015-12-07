@@ -10,6 +10,7 @@ import model.BatchResult;
 import model.DataItem;
 import model.ProcessResult;
 import processor.DataProcessor;
+import processor.ProcessFailException;
 import reader.DataReader;
 import writer.DataWriter;
 
@@ -24,24 +25,25 @@ import java.util.List;
 public class PipelineBatchController<T> implements BatchController<T>, OnPipelineFinish<T> {
     private BatchResult result;
     private List<ProcessLogger<T>> loggerList;
-    private DataReader<T> dataReader = null;
+    private DataReader<T> dataReader;
     private List<DataItem<T>> processedList;
     private DataWriter<T> dataWriter;
     final private PipeManager<T> pipeManager;
     private Date startTime;
     private int itemProcessed;
+    private Thread mainThread;
 
     public PipelineBatchController() {
-        processedList = new ArrayList<DataItem<T>>();
-        loggerList = new ArrayList<ProcessLogger<T>>();
-        pipeManager = new PipeManager<T>(this);
+        processedList = new ArrayList<>();
+        loggerList = new ArrayList<>();
+        pipeManager = new PipeManager<>(this);
     }
 
     public void addProcessor(DataProcessor<T> processor) {
         if (processor == null)
             throw new IllegalArgumentException("processor must not be null");
 
-        pipeManager.addPipe(new ThreadPipe<T>(processor));
+        pipeManager.addPipe(new ThreadPipe<>(processor));
     }
 
     public void addProcessLogger(ProcessLogger<T> logger) {
@@ -67,6 +69,7 @@ public class PipelineBatchController<T> implements BatchController<T>, OnPipelin
     }
 
     public void startProcess() throws NoProcessorExistException, IOException {
+        mainThread = Thread.currentThread();
         if (pipeManager.getPipeNumber() == 0)
             throw new NoProcessorExistException();
 
@@ -80,6 +83,17 @@ public class PipelineBatchController<T> implements BatchController<T>, OnPipelin
             itemRead++;
         }
         itemProcessed = itemRead;
+
+        while (itemProcessed != 0){
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                if (result != null){
+                    break;
+                }
+            }
+        }
+
     }
 
     public List<DataItem<T>> getItemList() {
@@ -87,10 +101,14 @@ public class PipelineBatchController<T> implements BatchController<T>, OnPipelin
     }
 
     public void onFinish(ProcessResult<T> result) {
-        if (result.isSuccess())
+        if (result.isSuccess()){
             processedList.add(result.getData());
-        else
+            writeProcessLog(result);
+        }
+        else{
+            pipeManager.stop();
             onBatchFinish(false);
+        }
 
         if (isFinished()){
             onBatchFinish(true);
@@ -98,9 +116,14 @@ public class PipelineBatchController<T> implements BatchController<T>, OnPipelin
 
     }
 
+    private void writeProcessLog(ProcessResult<T> result) {
+        for (ProcessLogger<T> logger : loggerList){
+            logger.writeLog(result);
+        }
+    }
+
     private void onBatchFinish(boolean success) {
-        BatchResult result = new BatchResult(itemProcessed, startTime, new Date(), success);
-        this.result = result;
+        result = new BatchResult(itemProcessed, startTime, new Date(), success);
         for (ProcessLogger<T> logger : loggerList){
             logger.writeResult(result);
         }
@@ -115,6 +138,7 @@ public class PipelineBatchController<T> implements BatchController<T>, OnPipelin
                 }
             }
         }
+        mainThread.interrupt();
     }
 
     private boolean isFinished(){

@@ -21,7 +21,7 @@ public class ThreadPipe<T> implements Runnable, Pipe<T> {
 
     public ThreadPipe(DataProcessor<T> processor) {
         work = true;
-        pipeQueue = new LinkedBlockingQueue<DataItem<T>>();
+        pipeQueue = new LinkedBlockingQueue<>();
         this.processor = processor;
         thread = new Thread(this);
         thread.start();
@@ -29,6 +29,7 @@ public class ThreadPipe<T> implements Runnable, Pipe<T> {
 
     public void finish(){
         work = false;
+        pipeQueue.clear();
     }
 
     public void run() {
@@ -51,6 +52,10 @@ public class ThreadPipe<T> implements Runnable, Pipe<T> {
 
     public void addItem(DataItem<T> dataItem) {
         pipeQueue.add(dataItem);
+        if (!work){
+            work = true;
+            thread.run();
+        }
     }
 
     public void setListener(PipelineProcessListener<T> listener) {

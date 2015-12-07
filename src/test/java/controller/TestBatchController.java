@@ -78,7 +78,10 @@ public abstract class TestBatchController {
     }
     @Test
     public void 리더_설정후_작동_확인() throws NoProcessorExistException, ProcessFailException, IOException {
-        sut.setDataReader(mock(DataReader.class));
+        DataReader mockReader = mock(DataReader.class);
+        when(mockReader.hasNext()).thenReturn(true, false);
+        when(mockReader.readNext()).thenReturn(mock(DataItem.class));
+        sut.setDataReader(mockReader);
         sut.startProcess();
 
         BatchResult result = sut.getResult();
@@ -169,22 +172,20 @@ public abstract class TestBatchController {
     protected ProcessLogger getMockLogger(){
         ProcessLogger mockLogger = mock(ProcessLogger.class);
 
-        doAnswer(new Answer() {
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                ProcessResult result = (ProcessResult) invocationOnMock.getArguments()[0];
+        doAnswer(invocationOnMock -> {
+            ProcessResult result = (ProcessResult) invocationOnMock.getArguments()[0];
 
-                StringBuilder builder = new StringBuilder();
-                builder.append("log = ")
-                        .append("data:")
-                        .append(result.getData())
-                        .append("sequence:")
-                        .append(result.getProcessorName());
+            StringBuilder builder = new StringBuilder();
+            builder.append("log = ")
+                    .append("data:")
+                    .append(result.getData())
+                    .append("sequence:")
+                    .append(result.getProcessorName());
 
 
-                System.out.println(builder.toString());
+            System.out.println(builder.toString());
 
-                return null;
-            }
+            return null;
         }).when(mockLogger).writeLog(Mockito.any(ProcessResult.class));
 
         return mockLogger;
@@ -193,19 +194,17 @@ public abstract class TestBatchController {
         DataWriter mockWriter = mock(DataWriter.class);
 
         try {
-            doAnswer(new Answer() {
-                public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                    Object o = invocationOnMock.getArguments()[0];
+            doAnswer(invocationOnMock -> {
+                Object o = invocationOnMock.getArguments()[0];
 
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("write = ")
-                            .append("data:")
-                            .append(mock(Object.class));
+                StringBuilder builder = new StringBuilder();
+                builder.append("write = ")
+                        .append("data:")
+                        .append(mock(Object.class));
 
-                    System.out.println(builder.toString());
+                System.out.println(builder.toString());
 
-                    return null;
-                }
+                return null;
             }).when(mockWriter).writeData(Mockito.anyObject());
         } catch (IOException e) {
             return null;

@@ -11,7 +11,10 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import javax.xml.crypto.Data;
 import java.util.Date;
+import java.util.TimerTask;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeoutException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -24,16 +27,15 @@ import static org.mockito.Mockito.*;
 public class TestPipeManager {
     private PipeManager sut;
     private Waiter waiter;
+    private OnPipelineFinish mockListener;
 
     @Before
     public void setUp(){
-        OnPipelineFinish mockListener = mock(OnPipelineFinish.class);
+        mockListener = mock(OnPipelineFinish.class);
 
-        doAnswer(new Answer() {
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                waiter.resume();
-                return null;
-            }
+        doAnswer(invocationOnMock -> {
+            waiter.resume();
+            return null;
         }).when(mockListener).onFinish(Mockito.any(ProcessResult.class));
 
         sut = new PipeManager(mockListener);
@@ -61,6 +63,25 @@ public class TestPipeManager {
         sut.addItem(mock(DataItem.class));
 
         waiter.await(2000, 1);
+    }
+
+    @Test
+    public void 작업_중지가_되는지_검사() throws Exception {
+        Pipe mock1 = mock(Pipe.class);
+        Pipe mock2 = mock(Pipe.class);
+
+        sut.addPipe(mock1);
+        sut.addPipe(mock2);
+
+        sut.addItem(mock(DataItem.class));
+        sut.addItem(mock(DataItem.class));
+        sut.addItem(mock(DataItem.class));
+        sut.addItem(mock(DataItem.class));
+
+        sut.stop();
+
+        verify(mock1, times(1)).finish();
+        verify(mock2, times(1)).finish();
     }
 
     private class TestPipe implements Pipe, Runnable{

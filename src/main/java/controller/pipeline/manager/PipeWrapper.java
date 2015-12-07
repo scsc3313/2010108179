@@ -32,6 +32,10 @@ public class PipeWrapper<T> implements PipelineProcessListener<T> {
         pipe.addItem(item);
     }
 
+    public void stop(){
+        pipe.finish();
+    }
+
     public void setNextWrapper(PipeWrapper<T> nextWrapper) {
         this.nextWrapper = nextWrapper;
     }
@@ -42,5 +46,7 @@ public class PipeWrapper<T> implements PipelineProcessListener<T> {
         else
             return nextWrapper;
     }
-
+    public PipeWrapper<T> getNextWrapper(){
+        return nextWrapper;
+    }
 }
