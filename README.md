@@ -22,7 +22,7 @@
   * 원한다면 BatchController Interface를 상속받아 구현 가능.
 ### 제약사항
 * 한번 추가된 Processor와 Logger는 변경 불가능하다.
-* 
+
 
 ## 실행방법/환경
 * 프로젝트 디렉토리의 input.txt에 처리할 데이터를 위치시킨 후 실행
